@@ -1,9 +1,9 @@
 package mergesort
 
 import (
-	"testing"
-	"reflect"
 	"errors"
+	"reflect"
+	"testing"
 )
 
 func TestMerge(t *testing.T) {
@@ -45,6 +45,25 @@ func TestSort(t *testing.T) {
 
 	for _, tc := range testCases {
 		Sort(tc.input)
+		if !reflect.DeepEqual(tc.input, tc.expected) {
+			t.Errorf("Expected %s but got %s", tc.expected, tc.input)
+		}
+	}
+}
+
+func TestMultiThreadedSort(t *testing.T) {
+	testCases := []struct {
+		input    []int
+		expected []int
+	}{
+		{[]int{2, 1, 3, 5, 4}, []int{1, 2, 3, 4, 5}},
+		{[]int{2, 1, 3, 5}, []int{1, 2, 3, 5}},
+		{[]int{1, 2, 3}, []int{1, 2, 3}},
+		{[]int{}, []int{}},
+	}
+
+	for _, tc := range testCases {
+		MultiThreadedSort(tc.input, nil)
 		if !reflect.DeepEqual(tc.input, tc.expected) {
 			t.Errorf("Expected %s but got %s", tc.expected, tc.input)
 		}
