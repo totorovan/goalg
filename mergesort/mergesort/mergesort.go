@@ -10,20 +10,25 @@ func Merge(left []int, right []int, to []int) error {
 		return errors.New("Size mismath")
 	}
 
+	leftCopy := make([]int, len(left))
+	rightCopy := make([]int, len(right))
+	copy(leftCopy, left)
+	copy(rightCopy, right)
+
 	var i, j int
 	for k := range to {
-		if left[i] <= right[j] {
-			to[k] = left[i]
+		if leftCopy[i] <= rightCopy[j] {
+			to[k] = leftCopy[i]
 			i++
-			if i == len(left) {
-				copy(to[k+1:], right[j:])
+			if i == len(leftCopy) {
+				copy(to[k+1:], rightCopy[j:])
 				break
 			}
 		} else {
-			to[k] = right[j]
+			to[k] = rightCopy[j]
 			j++
-			if j == len(right) {
-				copy(to[k+1:], left[i:])
+			if j == len(rightCopy) {
+				copy(to[k+1:], leftCopy[i:])
 				break
 			}
 		}
@@ -53,7 +58,7 @@ func swap(i int, j int, arr []int) {
 	arr[j] = temp
 }
 
-func MultiThreadedSort(arr []int, wg *sync.WaitGroup) {
+func MultiThreadedSort(arr []int, wg *sync.WaitGroup, multiThreaded bool) {
 	if wg != nil {
 		defer wg.Done()
 	}
@@ -68,13 +73,18 @@ func MultiThreadedSort(arr []int, wg *sync.WaitGroup) {
 		return
 	}
 
-	var localWG sync.WaitGroup
-	localWG.Add(2)
+	if multiThreaded {
+		var localWG sync.WaitGroup
+		localWG.Add(2)
 
-	go MultiThreadedSort(arr[:len(arr)/2], &localWG)
-	go MultiThreadedSort(arr[len(arr)/2:], &localWG)
+		go MultiThreadedSort(arr[:len(arr)/2], &localWG, false)
+		go MultiThreadedSort(arr[len(arr)/2:], &localWG, false)
 
-	localWG.Wait()
+		localWG.Wait()
+	} else {
+		MultiThreadedSort(arr[:len(arr)/2], nil, false)
+		MultiThreadedSort(arr[len(arr)/2:], nil, false)
+	}
 
 	Merge(arr[:len(arr)/2], arr[len(arr)/2:], arr)
 }
