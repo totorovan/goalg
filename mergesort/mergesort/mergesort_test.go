@@ -1,7 +1,6 @@
 package mergesort
 
 import (
-	"errors"
 	"math/rand"
 	"reflect"
 	"runtime"
@@ -14,20 +13,15 @@ func TestMerge(t *testing.T) {
 		right          []int
 		expectedResult []int
 		actualResult   []int
-		expectedErr    error
 	}{
-		{[]int{1, 3}, []int{2, 4}, []int{1, 2, 3, 4}, make([]int, 4), nil},
-		{[]int{3}, []int{2, 4}, []int{2, 3, 4}, make([]int, 3), nil},
-		{[]int{1, 3}, []int{2}, []int{1, 2, 3}, make([]int, 3), nil},
-		{[]int{1}, []int{2}, make([]int, 1), make([]int, 1), errors.New("Size mismath")},
+		{[]int{1, 3}, []int{2, 4}, []int{1, 2, 3, 4}, make([]int, 4)},
+		{[]int{3}, []int{2, 4}, []int{2, 3, 4}, make([]int, 3)},
+		{[]int{1, 3}, []int{2}, []int{1, 2, 3}, make([]int, 3)},
 	}
 
 	for _, tc := range testCases {
-		actualErr := Merge(tc.left, tc.right, tc.actualResult)
+		Merge(tc.left, tc.right, tc.actualResult)
 
-		if !reflect.DeepEqual(tc.expectedErr, actualErr) {
-			t.Errorf("Expected %s but got %s", tc.expectedErr, actualErr)
-		}
 		if !reflect.DeepEqual(tc.actualResult, tc.expectedResult) {
 			t.Errorf("Expected %s but got %s", tc.expectedResult, tc.actualResult)
 		}

@@ -1,15 +1,10 @@
 package mergesort
 
 import (
-	"errors"
 	"sync"
 )
 
-func Merge(left []int, right []int, to []int) error {
-	if len(left)+len(right) != len(to) {
-		return errors.New("Size mismath")
-	}
-
+func Merge(left []int, right []int, to []int) {
 	leftCopy := make([]int, len(left))
 	rightCopy := make([]int, len(right))
 	copy(leftCopy, left)
@@ -21,24 +16,22 @@ func Merge(left []int, right []int, to []int) error {
 			to[k] = leftCopy[i]
 			i++
 			if i == len(leftCopy) {
-				copy(to[k+1:], rightCopy[j:])
+				copy(to[k + 1:], rightCopy[j:])
 				break
 			}
 		} else {
 			to[k] = rightCopy[j]
 			j++
 			if j == len(rightCopy) {
-				copy(to[k+1:], leftCopy[i:])
+				copy(to[k + 1:], leftCopy[i:])
 				break
 			}
 		}
 	}
-
-	return nil
 }
 
 func Sort(arr []int) {
-	if len(arr) == 0 || len(arr) == 1 {
+	if len(arr) <= 1 {
 		return
 	}
 	if len(arr) == 2 {
@@ -47,15 +40,14 @@ func Sort(arr []int) {
 		}
 		return
 	}
-	Sort(arr[:len(arr)/2])
-	Sort(arr[len(arr)/2:])
-	Merge(arr[:len(arr)/2], arr[len(arr)/2:], arr)
+	mid := len(arr) / 2
+	Sort(arr[:mid])
+	Sort(arr[mid:])
+	Merge(arr[:mid], arr[mid:], arr)
 }
 
 func swap(i int, j int, arr []int) {
-	temp := arr[i]
-	arr[i] = arr[j]
-	arr[j] = temp
+	arr[i], arr[j] = arr[j], arr[i]
 }
 
 func MultiThreadedSort(arr []int, wg *sync.WaitGroup, multiThreaded bool) {
@@ -63,7 +55,7 @@ func MultiThreadedSort(arr []int, wg *sync.WaitGroup, multiThreaded bool) {
 		defer wg.Done()
 	}
 
-	if len(arr) == 0 || len(arr) == 1 {
+	if len(arr) <= 1 {
 		return
 	}
 	if len(arr) == 2 {
@@ -73,18 +65,20 @@ func MultiThreadedSort(arr []int, wg *sync.WaitGroup, multiThreaded bool) {
 		return
 	}
 
+	mid := len(arr) / 2
+
 	if multiThreaded {
 		var localWG sync.WaitGroup
 		localWG.Add(2)
 
-		go MultiThreadedSort(arr[:len(arr)/2], &localWG, false)
-		go MultiThreadedSort(arr[len(arr)/2:], &localWG, false)
+		go MultiThreadedSort(arr[:mid], &localWG, false)
+		go MultiThreadedSort(arr[mid:], &localWG, false)
 
 		localWG.Wait()
 	} else {
-		MultiThreadedSort(arr[:len(arr)/2], nil, false)
-		MultiThreadedSort(arr[len(arr)/2:], nil, false)
+		MultiThreadedSort(arr[:mid], nil, false)
+		MultiThreadedSort(arr[mid:], nil, false)
 	}
 
-	Merge(arr[:len(arr)/2], arr[len(arr)/2:], arr)
+	Merge(arr[:mid], arr[mid:], arr)
 }
