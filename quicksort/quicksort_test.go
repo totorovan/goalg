@@ -1,9 +1,9 @@
 package quicksort
 
 import (
-	"testing"
-	"reflect"
 	"math/rand"
+	"reflect"
+	"testing"
 )
 
 func TestSort(t *testing.T) {
@@ -16,6 +16,7 @@ func TestSort(t *testing.T) {
 		{[]int{1, 2, 3}, []int{1, 2, 3}},
 		{[]int{}, []int{}},
 		{[]int{2, 1, 1, 5, 6, 4, 7, 3, 5}, []int{1, 1, 2, 3, 4, 5, 5, 6, 7}},
+		{[]int{6, 1, 1, 5, 6, 6, 7, 6}, []int{1, 1, 5, 6, 6, 6, 6, 7}},
 	}
 
 	for _, tc := range testCases {
@@ -26,7 +27,7 @@ func TestSort(t *testing.T) {
 	}
 }
 
-const numberOfElems = 100000000
+const numberOfElems = 10000000
 
 func BenchmarkSort(b *testing.B) {
 	for n := 0; n < b.N; n++ {

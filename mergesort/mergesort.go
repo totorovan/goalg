@@ -16,14 +16,14 @@ func Merge(left []int, right []int, to []int) {
 			to[k] = leftCopy[i]
 			i++
 			if i == len(leftCopy) {
-				copy(to[k + 1:], rightCopy[j:])
+				copy(to[k+1:], rightCopy[j:])
 				break
 			}
 		} else {
 			to[k] = rightCopy[j]
 			j++
 			if j == len(rightCopy) {
-				copy(to[k + 1:], leftCopy[i:])
+				copy(to[k+1:], leftCopy[i:])
 				break
 			}
 		}

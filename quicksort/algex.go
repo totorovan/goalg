@@ -13,6 +13,6 @@ func CountSwap(arr []int, getPivot func([]int) int) int {
 			i++
 		}
 	}
-	Swap(0, i - 1, arr)
-	return CountSwap(arr[:i - 1], getPivot) + CountSwap(arr[i:], getPivot) + count
+	Swap(0, i-1, arr)
+	return CountSwap(arr[:i-1], getPivot) + CountSwap(arr[i:], getPivot) + count
 }

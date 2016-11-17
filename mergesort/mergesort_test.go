@@ -68,7 +68,7 @@ func TestMultiThreadedSort(t *testing.T) {
 	}
 }
 
-const numberOfElems = 100000000
+const numberOfElems = 10000000
 
 func BenchmarkSort(b *testing.B) {
 	for n := 0; n < b.N; n++ {
