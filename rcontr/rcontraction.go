@@ -6,25 +6,15 @@ import (
 	"time"
 )
 
-func (g *Graph) Cut(c chan int) {
-	rand.Seed(time.Now().UTC().UnixNano())
-	for len(g.Nodes) > 2 {
-		i, j := g.randEdge()
-		g.Nodes = g.mergeNodes(i, j)
-		g.removeLoops(i)
-	}
-	c <- len(g.Nodes[0].NeighboursIDs)
-}
-
 func (g *Graph) MinCut(numIter int, inParallel int) int {
-	var minCut = len(g.Nodes) * (len(g.Nodes) - 1)
+	var minCut = len(g.nodes) * (len(g.nodes) - 1)
 	logStep := 1000 / inParallel
 	for i := 0; i < numIter/inParallel; i++ {
 		c := make(chan int)
 		for j := 0; j < inParallel; j++ {
 			go func() {
 				grCopy := g.Copy()
-				grCopy.Cut(c)
+				grCopy.cut(c)
 			}()
 		}
 		for j := 0; j < inParallel; j++ {
@@ -40,8 +30,18 @@ func (g *Graph) MinCut(numIter int, inParallel int) int {
 	return minCut
 }
 
+func (g *Graph) cut(c chan int) {
+	rand.Seed(time.Now().UTC().UnixNano())
+	for len(g.nodes) > 2 {
+		i, j := g.randEdge()
+		g.nodes = g.mergeNodes(i, j)
+		g.removeLoops(i)
+	}
+	c <- len(g.nodes[0].neighboursIDs)
+}
+
 func (gr *Graph) randEdge() (int, int) {
-	i := rand.Intn(len(gr.Nodes))
-	j := rand.Intn(len(gr.Nodes[i].NeighboursIDs))
-	return gr.Nodes[i].ID, gr.Nodes[i].NeighboursIDs[j]
+	i := rand.Intn(len(gr.nodes))
+	j := rand.Intn(len(gr.nodes[i].neighboursIDs))
+	return gr.nodes[i].ID, gr.nodes[i].neighboursIDs[j]
 }

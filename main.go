@@ -15,10 +15,10 @@ func main() {
 	inParallel := runtime.NumCPU()
 	runtime.GOMAXPROCS(inParallel)
 
-	graph := prepare()
+	g := prepare()
 
-	numIter := iterations(len(graph.Nodes))
-	res := graph.MinCut(numIter, inParallel)
+	iter := iterations(g.Len())
+	res := g.MinCut(iter, inParallel)
 	fmt.Println("Mincut: ", res)
 }
 
@@ -29,7 +29,7 @@ func prepare() *rcontr.Graph {
 	}
 	defer file.Close()
 
-	graph := rcontr.Graph{}
+	graph := rcontr.NewGraph(false)
 	for i := 1; i <= 200; i++ {
 		graph.AddNode(rcontr.Node{ID: i})
 	}
@@ -54,7 +54,7 @@ func prepare() *rcontr.Graph {
 		bytes, _, err = r.ReadLine()
 	}
 
-	return &graph
+	return graph
 }
 
 func iterations(n int) int {
