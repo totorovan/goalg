@@ -6,44 +6,42 @@ import (
 )
 
 type Graph struct {
-	Nodes      []*Node
+	Nodes      map[int]*Node
 	IsDirected bool
 }
 
 func NewGraph(isDirected bool) *Graph {
-	return &Graph{IsDirected: isDirected}
+	g := &Graph{IsDirected: isDirected}
+	g.Nodes = make(map[int]*Node)
+	return g
 }
 
 func (g *Graph) Reverse() *Graph {
 	if !g.IsDirected {
 		panic("Undirected graph!")
 	}
-	rG := &Graph{IsDirected: true}
-	nodesMap := make(map[int]*Node)
-	for _, node := range g.Nodes {
-		n := &Node{ID: node.ID}
-		nodesMap[node.ID] = n
+	rG := NewGraph(true)
+	for id := range g.Nodes {
+		n := &Node{ID: id}
 		rG.AddNode(n)
 	}
 	for _, node := range g.Nodes {
 		for _, neighbor := range node.Neighbours {
-			rG.AddEdge(nodesMap[neighbor.ID], nodesMap[node.ID])
+			rG.AddEdge(rG.Nodes[neighbor.ID], rG.Nodes[node.ID])
 		}
 	}
 	return rG
 }
 
 func (g *Graph) Copy() *Graph {
-	nodes := make([]*Node, len(g.Nodes))
-	nodesMap := make(map[int]*Node)
-	for i, node := range g.Nodes {
-		nodes[i] = &Node{ID: node.ID}
-		nodesMap[node.ID] = nodes[i]
+	nodes := make(map[int]*Node)
+	for id := range g.Nodes {
+		nodes[id] = &Node{ID: id}
 	}
-	for i, node := range g.Nodes {
-		nodes[i].Neighbours = make([]*Node, len(node.Neighbours))
+	for id, node := range g.Nodes {
+		nodes[id].Neighbours = make([]*Node, len(node.Neighbours))
 		for j, neighbor := range node.Neighbours {
-			nodes[i].Neighbours[j] = nodesMap[neighbor.ID]
+			nodes[id].Neighbours[j] = nodes[neighbor.ID]
 		}
 	}
 	return &Graph{Nodes: nodes, IsDirected: g.IsDirected}
@@ -61,41 +59,31 @@ type Node struct {
 type Component []int
 
 func (g *Graph) Node(id int) (*Node, error) {
-	for _, node := range g.Nodes {
-		if node.ID == id {
-			return node, nil
-		}
+	node, ok := g.Nodes[id]
+	if ok {
+		return node, nil
 	}
 	return nil, errors.New("Not found")
 }
 
-func (g *Graph) getIndex(node *Node) (int, error) {
-	for i := range g.Nodes {
-		if g.Nodes[i] == node {
-			return i, nil
-		}
-	}
-	return 0, errors.New("Not found")
-}
-
 func (g *Graph) AddNode(node *Node) {
-	_, err := g.getIndex(node)
-	if err == nil {
-		panic(fmt.Sprintf("Node with id %d already exists", node.ID))
+	_, ok := g.Nodes[node.ID]
+	if ok {
+		return
 	}
-	g.Nodes = append(g.Nodes, node)
+	g.Nodes[node.ID] = node
 }
 
-func (g *Graph) RemoveNode(node *Node) []*Node {
-	i, err := g.getIndex(node)
-	if err != nil {
+func (g *Graph) RemoveNode(id int) {
+	node, ok := g.Nodes[id]
+	if !ok {
 		panic(fmt.Sprintf("Node with id %d doesn't exist", node.ID))
 	}
 	for _, neighbor := range node.Neighbours {
 		neighbor.Neighbours = remove(node, neighbor.Neighbours)
 	}
 
-	return append(g.Nodes[:i], g.Nodes[i+1:]...)
+	delete(g.Nodes, id)
 }
 
 func (g *Graph) AddEdge(node1, node2 *Node) {
@@ -108,6 +96,29 @@ func (g *Graph) AddEdge(node1, node2 *Node) {
 	if !g.IsDirected {
 		node2.Neighbours = append(node2.Neighbours, node1)
 	}
+}
+
+func (g *Graph) AddEdgeByIDs(id1, id2 int) {
+	node1, ok := g.Nodes[id1]
+	if !ok {
+		node1 = &Node{ID: id1}
+		g.AddNode(node1)
+	}
+	node2, ok := g.Nodes[id2]
+	if !ok {
+		node2 = &Node{ID: id2}
+		g.AddNode(node2)
+	}
+	g.AddEdge(node1, node2)
+}
+
+func (g *Graph) AddNodeByID(id int) {
+	_, ok := g.Nodes[id]
+	if ok {
+		return
+	}
+	node := &Node{ID: id}
+	g.AddNode(node)
 }
 
 func (gr *Graph) addLoop(node *Node) {
@@ -125,9 +136,9 @@ func (gr *Graph) removeLoops(node *Node) {
 	node.Neighbours = remove(node, node.Neighbours)
 }
 
-func (g *Graph) MergeNodes(node1, node2 *Node) []*Node {
+func (g *Graph) MergeNodes(node1, node2 *Node) {
 	if node1 == node2 {
-		return g.Nodes
+		return
 	}
 
 	for _, neighbor := range node2.Neighbours {
@@ -144,7 +155,7 @@ func (g *Graph) MergeNodes(node1, node2 *Node) []*Node {
 		}
 	}
 
-	return g.RemoveNode(node2)
+	g.RemoveNode(node2.ID)
 }
 
 func remove(node *Node, nodes []*Node) []*Node {

@@ -34,7 +34,7 @@ func (g *Graph) cut(c chan int) {
 	rand.Seed(time.Now().UTC().UnixNano())
 	for len(g.Nodes) > 2 {
 		node1, node2 := g.randEdge()
-		g.Nodes = g.MergeNodes(node1, node2)
+		g.MergeNodes(node1, node2)
 		g.removeLoops(node1)
 	}
 	c <- len(g.Nodes[0].Neighbours)

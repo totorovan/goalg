@@ -59,7 +59,7 @@ func (g *Graph) DFSLoop2(time []int) map[int][]int {
 	explored := make(map[int]bool)
 	var leader *Node
 	for i := len(time) - 1; i >= 0; i-- {
-		node := g.Nodes[time[i]-1]
+		node := g.Nodes[time[i]]
 		if explored[node.ID] {
 			continue
 		}

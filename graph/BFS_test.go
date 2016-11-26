@@ -19,7 +19,13 @@ func TestGraph_Dist(t *testing.T) {
 	node4.Neighbours = []*Node{node2, node5, node6}
 	node5.Neighbours = []*Node{node2, node3, node4, node6}
 	node6.Neighbours = []*Node{node4, node5}
-	g := &Graph{Nodes: []*Node{node1, node2, node3, node4, node5, node6}}
+	g := &Graph{Nodes: map[int]*Node{
+		node1.ID: node1,
+		node2.ID: node2,
+		node3.ID: node3,
+		node4.ID: node4,
+		node5.ID: node5,
+		node6.ID: node6}}
 
 	dist, err := g.Dist(1, 6)
 	if err != nil {
@@ -44,7 +50,12 @@ func TestGraph_Components(t *testing.T) {
 	node4.Neighbours = []*Node{node5}
 	node5.Neighbours = []*Node{node4}
 
-	g := &Graph{Nodes: []*Node{node1, node2, node3, node4, node5}}
+	g := &Graph{Nodes: map[int]*Node{
+		node1.ID: node1,
+		node2.ID: node2,
+		node3.ID: node3,
+		node4.ID: node4,
+		node5.ID: node5}}
 
 	components := g.Components()
 

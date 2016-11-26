@@ -6,12 +6,12 @@ import (
 )
 
 func TestAddNode(t *testing.T) {
-	gr := Graph{}
+	g := NewGraph(false)
 	node := &Node{ID: 1}
 
-	gr.AddNode(node)
+	g.AddNode(node)
 
-	if len(gr.Nodes) != 1 || !reflect.DeepEqual(gr.Nodes[0], node) {
+	if len(g.Nodes) != 1 || !reflect.DeepEqual(g.Nodes[1], node) {
 		t.Error("Node with ID 1 doesn't exist")
 	}
 }
@@ -22,25 +22,14 @@ func TestRemoveNode(t *testing.T) {
 	node2 := &Node{ID: 2}
 	node1.Neighbours = []*Node{node2}
 	node2.Neighbours = []*Node{node1}
-	gr.Nodes = []*Node{node1, node2}
+	gr.Nodes = map[int]*Node{
+		node1.ID: node1,
+		node2.ID: node2}
 
-	gr.Nodes = gr.RemoveNode(node1)
+	gr.RemoveNode(node1.ID)
 
-	if len(gr.Nodes) != 1 || len(gr.Nodes[0].Neighbours) != 0 {
+	if len(gr.Nodes) != 1 || len(gr.Nodes[node2.ID].Neighbours) != 0 {
 		t.Error("Node with ID 1 hasn't been deleted")
-	}
-}
-
-func TestGetIndex(t *testing.T) {
-	gr := Graph{}
-	node := &Node{ID: 1}
-	gr.Nodes = []*Node{node}
-
-	if i, err := gr.getIndex(node); i != 0 || err != nil {
-		t.Error("Incorrect index")
-	}
-	if _, err := gr.getIndex(&Node{}); err == nil {
-		t.Error("Error should be returned")
 	}
 }
 
@@ -96,9 +85,12 @@ func TestMergeNodes_Undirected(t *testing.T) {
 	node1.Neighbours = []*Node{node1, node2}
 	node2.Neighbours = []*Node{node1, node3}
 	node3.Neighbours = []*Node{node2}
-	gr.Nodes = []*Node{node1, node2, node3}
+	gr.Nodes = map[int]*Node{
+		node1.ID: node1,
+		node2.ID: node2,
+		node3.ID: node3}
 
-	gr.Nodes = gr.MergeNodes(node1, node2)
+	gr.MergeNodes(node1, node2)
 
 	if len(gr.Nodes) != 2 {
 		t.Error("Node 2 hasn't been removed")
@@ -117,9 +109,12 @@ func TestMergeNodes_Directed(t *testing.T) {
 	node1.Neighbours = []*Node{node2, node3}
 	node2.Neighbours = []*Node{node3}
 	node3.Neighbours = []*Node{}
-	gr.Nodes = []*Node{node1, node2, node3}
+	gr.Nodes = map[int]*Node{
+		node1.ID: node1,
+		node2.ID: node2,
+		node3.ID: node3}
 
-	gr.Nodes = gr.MergeNodes(node1, node2)
+	gr.MergeNodes(node1, node2)
 
 	if len(gr.Nodes) != 2 {
 		t.Error("Node 2 hasn't been removed")
@@ -137,7 +132,8 @@ func TestRemove(t *testing.T) {
 }
 
 func TestGraph_Len(t *testing.T) {
-	g := Graph{Nodes: []*Node{{ID: 1}}}
+	g := Graph{Nodes: map[int]*Node{
+		1: {ID: 1}}}
 
 	if g.Len() != 1 {
 		t.Error("Incorrect length of graph")
@@ -161,7 +157,9 @@ func TestGraph_New(t *testing.T) {
 func TestGraph_Copy(t *testing.T) {
 	node1 := &Node{ID: 1}
 	node2 := &Node{ID: 2}
-	g := &Graph{Nodes: []*Node{{1, []*Node{node2}}, {2, []*Node{node1}}}}
+	g := &Graph{Nodes: map[int]*Node{
+		1: {1, []*Node{node2}},
+		2: {2, []*Node{node1}}}}
 
 	gCopy := g.Copy()
 
@@ -169,7 +167,7 @@ func TestGraph_Copy(t *testing.T) {
 		t.Error("Copy must not return the same reference")
 	}
 
-	if g.Nodes[0] == gCopy.Nodes[0] || g.Nodes[1] == gCopy.Nodes[1] {
+	if g.Nodes[node1.ID] == gCopy.Nodes[node1.ID] || g.Nodes[node2.ID] == gCopy.Nodes[node2.ID] {
 		t.Error("The same node pointers")
 	}
 }
@@ -178,7 +176,9 @@ func TestGraph_Reverse(t *testing.T) {
 	node1 := &Node{ID: 1}
 	node2 := &Node{ID: 2}
 	node1.Neighbours = []*Node{node2}
-	g := &Graph{Nodes: []*Node{node1, node2}, IsDirected: true}
+	g := &Graph{Nodes: map[int]*Node{
+		node1.ID: node1,
+		node2.ID: node2}, IsDirected: true}
 
 	gR := g.Reverse()
 
@@ -188,19 +188,19 @@ func TestGraph_Reverse(t *testing.T) {
 	if len(gR.Nodes) != 2 {
 		t.Error("Incorrect number of nodes")
 	}
-	if gR.Nodes[0].ID != 1 {
+	if gR.Nodes[node1.ID].ID != 1 {
 		t.Error("Incorrect ID of first node")
 	}
-	if len(gR.Nodes[0].Neighbours) != 0 {
+	if len(gR.Nodes[node1.ID].Neighbours) != 0 {
 		t.Error("First node shouldn't have outgoing edges")
 	}
-	if gR.Nodes[1].ID != 2 {
+	if gR.Nodes[node2.ID].ID != 2 {
 		t.Error("Incorrect ID of the second node")
 	}
-	if len(gR.Nodes[1].Neighbours) != 1 {
+	if len(gR.Nodes[node2.ID].Neighbours) != 1 {
 		t.Error("Incorrect number of edges outgoing from 2nd node")
 	}
-	if gR.Nodes[1].Neighbours[0] != gR.Nodes[0] {
+	if gR.Nodes[node2.ID].Neighbours[0] != gR.Nodes[node1.ID] {
 		t.Error("2nd node points to incorrect node")
 	}
 }
