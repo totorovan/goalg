@@ -1,4 +1,4 @@
-package rcontr
+package graph
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 func (g *Graph) MinCut(numIter int, inParallel int) int {
-	var minCut = len(g.nodes) * (len(g.nodes) - 1)
+	var minCut = len(g.Nodes) * (len(g.Nodes) - 1)
 	logStep := 1000 / inParallel
 	for i := 0; i < numIter/inParallel; i++ {
 		c := make(chan int)
@@ -32,16 +32,16 @@ func (g *Graph) MinCut(numIter int, inParallel int) int {
 
 func (g *Graph) cut(c chan int) {
 	rand.Seed(time.Now().UTC().UnixNano())
-	for len(g.nodes) > 2 {
-		i, j := g.randEdge()
-		g.nodes = g.mergeNodes(i, j)
-		g.removeLoops(i)
+	for len(g.Nodes) > 2 {
+		node1, node2 := g.randEdge()
+		g.Nodes = g.MergeNodes(node1, node2)
+		g.removeLoops(node1)
 	}
-	c <- len(g.nodes[0].neighboursIDs)
+	c <- len(g.Nodes[0].Neighbours)
 }
 
-func (gr *Graph) randEdge() (int, int) {
-	i := rand.Intn(len(gr.nodes))
-	j := rand.Intn(len(gr.nodes[i].neighboursIDs))
-	return gr.nodes[i].ID, gr.nodes[i].neighboursIDs[j]
+func (gr *Graph) randEdge() (*Node, *Node) {
+	i := rand.Intn(len(gr.Nodes))
+	j := rand.Intn(len(gr.Nodes[i].Neighbours))
+	return gr.Nodes[i], gr.Nodes[i].Neighbours[j]
 }
